@@ -13,8 +13,15 @@ sensevoice_dir = "/home/YOURUSER/.local/share/voicetype/models/sensevoice/"
 # Whisper 模型路径 (ggml 格式, 建议 ggml-base.bin; engine = "whisper" 时使用)
 model_path = "/home/YOURUSER/.local/share/voicetype/models/ggml-base.bin"
 
-# 快捷键说明 (仅展示, 代码中固定为 RightCtrl+RightShift 按住说话)
-hotkey = "RightCtrl+RightShift (hold to talk)"
+# 快捷键（按住说话，松开任意一个键提交）。多个组合用数组列出，任一组合
+# 生效即可。可用键名：LeftCtrl RightCtrl LeftShift RightShift LeftAlt
+# RightAlt LeftSuper RightSuper(或 LeftWin RightWin) Space CapsLock，
+# 也可以直接写 evdev 键码（如 "F13" 对应键盘上报的键码需自行确认）。
+# 默认 ["RightCtrl+RightShift"]。注意 Ctrl+Shift 等组合可能同时触发输入法
+# 或桌面快捷键；单键（如 RightAlt）会占用该键的正常输入功能。
+# hotkeys = ["RightCtrl+RightShift"]
+
+hotkey = "RightCtrl+RightShift (hold to talk)"  # 兼容保留, 仅展示
 
 # 保留的兼容配置项；剪贴板注入不会切换输入法。
 ime_switch = false

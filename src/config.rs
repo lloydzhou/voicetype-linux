@@ -54,7 +54,13 @@ pub struct Config {
     #[serde(default = "default_sensevoice_dir")]
     pub sensevoice_dir: String,
     /// Display-only description of the (hard-coded) hotkey.
+    #[serde(default = "default_hotkey_display")]
     pub hotkey: String,
+    /// Active hold-to-talk chords, e.g. ["RightCtrl+RightShift"]. Empty or
+    /// missing selects the default. Parsed by hotkey::parse_combos, which
+    /// fails startup on unknown key names.
+    #[serde(default)]
+    pub hotkeys: Vec<String>,
     /// Switch fcitx/ibus to English before paste and restore after.
     /// Default false: never touch the IME.
     #[serde(default)]
@@ -69,7 +75,8 @@ impl Default for Config {
             model_path: default_model_path().to_string_lossy().into_owned(),
             engine: default_engine(),
             sensevoice_dir: default_sensevoice_dir(),
-            hotkey: "RightCtrl+RightShift (hold to talk)".to_string(),
+            hotkey: default_hotkey_display(),
+            hotkeys: Vec::new(),
             ime_switch: false,
         }
     }
@@ -92,6 +99,10 @@ pub fn default_model_path() -> PathBuf {
 
 pub fn default_engine() -> String {
     "sensevoice".to_string()
+}
+
+pub fn default_hotkey_display() -> String {
+    "RightCtrl+RightShift (hold to talk)".to_string()
 }
 
 pub fn default_sensevoice_dir() -> String {

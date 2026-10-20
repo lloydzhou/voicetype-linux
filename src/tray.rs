@@ -113,7 +113,11 @@ pub fn setup(config: SharedConfig, tx: glib::Sender<TrayAction>) -> Result<Tray,
     let tray = TrayIconBuilder::new()
         .with_id("voicetype")
         .with_menu(Box::new(menu.clone()))
-        .with_tooltip("voicetype — 按住右 Ctrl+右 Shift 说话")
+        .with_tooltip(format!(
+            "voicetype — 按住 {} 说话",
+            config.lock().map(|c| crate::hotkey::display_combos(&c.hotkeys))
+                .unwrap_or_else(|_| "右 Ctrl+右 Shift".to_string())
+        ))
         .with_icon(icon)
         .build()
         .map_err(|e| format!("创建托盘失败: {e}"))?;

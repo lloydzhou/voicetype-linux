@@ -10,7 +10,11 @@ Linux 按住说话、松开上屏的语音输入工具。项目仓库：[lloydzh
 - X11 已在 Arch Linux、nwm、Sakura 环境进行测试，但不代表“快捷键 → 麦克风 → 识别 → 目标窗口粘贴”的实时完整路径在所有环境已验证。请先在无敏感内容的文本框中试用。
 - **Wayland 为实验性支持**：注入依赖 `wl-clipboard`、`wtype` 和合成器的虚拟键盘协议支持；HUD 未实现 layer-shell，不能保证位置、置顶及不抢焦点。不要据此假定 GNOME、KDE 或其他合成器可用。
 
-快捷键通过 evdev 读取，不会屏蔽窗口管理器的同名绑定；请避免冲突。文本通过剪贴板粘贴到注入时的焦点窗口，X11 对识别出的终端使用 `Ctrl+Shift+V`，其他应用使用 `Ctrl+V`。不会自动切换输入法；应用自身的快捷键、剪贴板管理器及焦点变化都可能影响结果。日志中的命令成功不等于目标应用已收到文字。
+### 快捷键配置
+
+`hotkeys` 数组配置按住说话的组合，任一组合完全按下即开始录音，松开其中任意一个键提交。可用键名：`LeftCtrl` `RightCtrl` `LeftShift` `RightShift` `LeftAlt` `RightAlt` `LeftSuper` `RightSuper`（或 `LeftWin`/`RightWin`）`Space` `CapsLock`，也可直接写 evdev 键码（如 `"100"`）。默认 `["RightCtrl+RightShift"]`；可配置多个组合，例如 `hotkeys = ["RightCtrl+RightShift", "RightAlt"]`。键名写错会在启动时报错退出。改配置后需重启程序生效。
+
+快捷键通过 evdev 读取，不会屏蔽窗口管理器或输入法对相同组合的处理：`Ctrl+Shift` 可能触发输入法切换，单键（如 `RightAlt`）会占用该键的正常输入功能，请自行权衡。文本通过剪贴板粘贴到注入时的焦点窗口，X11 对识别出的终端使用 `Ctrl+Shift+V`，其他应用使用 `Ctrl+V`。不会自动切换输入法；应用自身的快捷键、剪贴板管理器及焦点变化都可能影响结果。日志中的命令成功不等于目标应用已收到文字。
 
 ## 安装
 
@@ -89,7 +93,7 @@ language = "zh-Hans"        # en | zh-Hans | zh-Hant | ja | ko
 engine = "sensevoice"       # sensevoice | whisper
 sensevoice_dir = "/home/YOURUSER/.local/share/voicetype/models/sensevoice"
 model_path = "/home/YOURUSER/.local/share/voicetype/models/ggml-base.bin"
-hotkey = "RightCtrl+RightShift (hold to talk)" # 仅说明，不改变快捷键
+hotkeys = ["RightCtrl+RightShift"]  # 自定义快捷键，见下文
 ime_switch = false          # 当前粘贴路径不切换输入法
 
 [llm]

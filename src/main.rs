@@ -54,6 +54,12 @@ fn main() {
 
     let config = shared(Config::load_or_create());
 
+    // Hotkey chords are load-bearing config: a typo must stop startup
+    // instead of silently leaving the app without a way to record.
+    let combos = hotkey::parse_combos(&config.lock().unwrap().hotkeys)
+        .unwrap_or_else(|e| { eprintln!("{e}"); std::process::exit(2); });
+    let hotkey_display = hotkey::display_combos(&config.lock().unwrap().hotkeys);
+
     gtk::init().expect("gtk init");
 
     // ---- glib channels ----
@@ -64,7 +70,7 @@ fn main() {
     let (hide_tx, hide_rx) = glib::MainContext::channel::<()>(glib::Priority::DEFAULT);
 
     // ---- background threads ----
-    let hk_handle = hotkey::spawn(hk_tx);
+    let hk_handle = hotkey::spawn(hk_tx, combos);
 
     // ---- tray ----
     let tray = match tray::setup(config.clone(), tray_tx) {
@@ -151,7 +157,7 @@ fn main() {
         });
     }
 
-    log::info!("ready — hold RightCtrl+RightShift to talk; release either key to submit");
+    log::info!("ready — hold {hotkey_display} to talk; release any chord key to submit");
     gtk::main();
 
     drop(tray);
