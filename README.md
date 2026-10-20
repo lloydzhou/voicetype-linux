@@ -28,7 +28,15 @@ sudo pacman -S --needed rust cmake clang base-devel alsa-lib gtk3 \
 cargo build --release
 ```
 
-实验性 Wayland 注入另需 `wl-clipboard` 和 `wtype`。Debian/Ubuntu 的构建依赖与运行库打包仍待安装验证。
+实验性 Wayland 注入另需 `wl-clipboard` 和 `wtype`。
+
+### Debian 发布流程
+
+[Debian release](https://github.com/lloydzhou/voicetype-linux/actions/workflows/release.yml) 在 main 推送时验证构建，也可手动运行。推送 `v0.1.0` 这样的版本标签会在验证成功后创建 GitHub Release，上传 AMD64 `.deb` 和 SHA256SUMS。当前首轮完整打包验证进行中，尚未发布稳定安装包。
+
+构建使用 Ubuntu 22.04；GTK、ALSA、X11 等由 APT 依赖安装，匹配构建版本的 sherpa-onnx / ONNX Runtime 放在包内 `/usr/lib/voicetype/`，不覆盖系统库。CI 在干净的 Ubuntu 22.04 和 Debian 12 容器中安装检查，不继承构建缓存或 `LD_LIBRARY_PATH`。容器检查不等于真实桌面的麦克风、热键和粘贴验证。Arch 请使用本机构建，不安装 Debian 包。
+
+发布后下载对应包并运行 `sudo apt install ./voicetype_*_amd64.deb`；模型及输入权限仍需按下文单独配置。共享 APT 源尚未接入。
 
 **不要只复制可执行文件就假定安装完成。** 当前 sherpa-onnx / ONNX Runtime 路径需要共享库，运行时必须能找到兼容的 `.so`。共享库安装与打包仍在完善；构建成功不等于目标机器可直接运行。请以验证后的发布说明为准，不建议通过以 root 身份运行来解决运行库或输入权限问题。
 

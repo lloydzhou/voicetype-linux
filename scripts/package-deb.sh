@@ -41,6 +41,8 @@ install -Dm644 "$root/packaging/voicetype.desktop" "$stage/usr/share/application
 install -Dm644 "$root/config.example.toml" "$stage/usr/share/doc/voicetype/config.example.toml"
 install -Dm644 "$root/LICENSE" "$stage/usr/share/doc/voicetype/copyright"
 install -Dm644 "$root/THIRD_PARTY_NOTICES.md" "$stage/usr/share/doc/voicetype/THIRD_PARTY_NOTICES.md"
+install -d "$stage/usr/share/doc/voicetype/licenses"
+install -m644 "$root"/packaging/licenses/* "$stage/usr/share/doc/voicetype/licenses/"
 # Resolve distro-specific GTK/ALSA dependency names instead of hardcoding t64 names.
 mkdir -p "$stage/debian"
 printf 'Source: voicetype\nSection: utils\nPriority: optional\nMaintainer: lloydzhou <lloydzhou@users.noreply.github.com>\n\nPackage: voicetype\nArchitecture: amd64\nDescription: Local hold-to-talk dictation\n' > "$stage/debian/control"
