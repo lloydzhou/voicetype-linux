@@ -32,7 +32,7 @@ cargo build --release
 
 ### Debian 发布流程
 
-[Debian release](https://github.com/lloydzhou/voicetype-linux/actions/workflows/release.yml) 在 main 推送时验证构建，也可手动运行。推送 `v0.1.0` 这样的版本标签会在验证成功后创建 GitHub Release，上传 AMD64 `.deb` 和 SHA256SUMS。当前首轮完整打包验证进行中，尚未发布稳定安装包。
+[Debian release](https://github.com/lloydzhou/voicetype-linux/actions/workflows/release.yml) 在 main 推送时验证构建，也可手动运行。推送 `v0.1.0` 这样的版本标签会在验证成功后创建 GitHub Release，上传 AMD64 `.deb` 和 SHA256SUMS。打包验证已通过：构建、单元与真实粘贴测试、干净 Ubuntu 22.04 / Debian 12 容器安装检查；正式安装包在推送版本标签后发布。
 
 构建使用 Ubuntu 22.04；GTK、ALSA、X11 等由 APT 依赖安装，匹配构建版本的 sherpa-onnx / ONNX Runtime 放在包内 `/usr/lib/voicetype/`，不覆盖系统库。CI 在干净的 Ubuntu 22.04 和 Debian 12 容器中安装检查，不继承构建缓存或 `LD_LIBRARY_PATH`。容器检查不等于真实桌面的麦克风、热键和粘贴验证。Arch 请使用本机构建，不安装 Debian 包。
 
