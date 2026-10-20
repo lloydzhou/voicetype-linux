@@ -41,7 +41,7 @@ jobs:
         run: |
           python3 - <<'PY'
           import os, pathlib
-          roots = [pathlib.Path.home()/'.cache/sherpa-rs', pathlib.Path('target')]
+          roots = [pathlib.Path.home()/'.cache/sherpa-rs']
           paths = sorted({str(p.parent.resolve()) for root in roots if root.exists() for p in root.rglob('libsherpa-onnx-c-api.so')})
           if len(paths) != 1:
               raise SystemExit(f'Expected one shared runtime directory, found {paths}')
@@ -54,6 +54,7 @@ jobs:
           XDG_SESSION_TYPE: x11
           VOICETYPE_INJECTION_PROBE: '1'
         run: |
+          python3 -m unittest discover -s tests -p 'test_download_model.py' -v
           cargo test --locked --bin voicetype -- --test-threads=1
           xvfb-run -a cargo test --locked --test injection_probe x11_entry_paste_readback -- --ignored --nocapture --test-threads=1
           xvfb-run -a cargo test --locked --test sakura_probe real_sakura_readback -- --ignored --nocapture --test-threads=1

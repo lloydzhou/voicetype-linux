@@ -53,7 +53,18 @@ sudo usermod -aG input "$USER"
 
 ## 模型与配置
 
-模型需要联网单独下载，下载前请核对上游许可证。默认引擎需要 `model.int8.onnx` 与 `tokens.txt`：
+模型需要联网单独下载，下载前请核对上游许可证。默认引擎需要 `model.int8.onnx` 与 `tokens.txt`。Debian 包提供下载命令；请以运行听写的普通用户执行：
+
+```bash
+voicetype-download-model
+voicetype-download-model --hf-base https://hf-mirror.com
+voicetype-download-model --proxy http://127.0.0.1:7890
+voicetype-download-model --output-dir /path/to/models/sensevoice
+```
+
+默认 HF 源为 `HF_ENDPOINT` 或 `https://huggingface.co`；也遵循 curl 的代理环境变量。默认目录为 `${XDG_DATA_HOME:-$HOME/.local/share}/voicetype/models/sensevoice`。自定义目录后需同步配置 `sensevoice_dir`。两个文件均下载并通过非空／非 HTML 检查后才替换旧文件，失败保留原文件；替换是逐文件重命名，不保证两文件整体原子性。该检查不能证明模型真实性，请使用可信源。
+
+源码用户可运行 `bash scripts/download-model.sh`，参数相同，或使用 Make：
 
 ```bash
 make model-sensevoice HF=https://huggingface.co

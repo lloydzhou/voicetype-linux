@@ -14,6 +14,7 @@ stage=$(mktemp -d)
 # Only remove the directory created by this invocation.
 trap '[[ -n "$stage" && -d "$stage" && "$stage" == /tmp/tmp.* ]] && rm -rf -- "$stage"' EXIT
 install -Dm755 "$binary" "$stage/usr/bin/voicetype"
+install -Dm755 "$root/scripts/download-model.sh" "$stage/usr/bin/voicetype-download-model"
 mkdir -p "$stage/usr/lib/voicetype" "$stage/DEBIAN" "$out"
 # ldd resolves the exact libraries selected by this build, including sherpa's cache.
 python3 - "$binary" "$stage/usr/lib/voicetype" <<'PY'
@@ -60,7 +61,7 @@ Priority: optional
 Architecture: $arch
 Maintainer: lloydzhou <lloydzhou@users.noreply.github.com>
 Homepage: https://github.com/lloydzhou/voicetype-linux
-Depends: $deps, xdotool, xclip, x11-utils
+Depends: $deps, xdotool, xclip, x11-utils, curl, ca-certificates
 Recommends: libayatana-appindicator3-1
 Suggests: wl-clipboard, wtype
 Description: Local hold-to-talk voice input for Linux
