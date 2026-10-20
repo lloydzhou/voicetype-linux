@@ -41,11 +41,12 @@ jobs:
           path: ~/.cache/sherpa-rs
           key: sherpa-rs-${{ hashFiles('Cargo.lock') }}-x86_64-unknown-linux-gnu
       - name: Build
-        # rust-cache restores build-script output whose -L points into
-        # ~/.cache/sherpa-rs; refresh the sys crate so a missing runtime
-        # directory is re-downloaded before linking instead of failing.
+        # rust-cache restores build-script output whose -L search paths point
+        # into ~/.cache/sherpa-rs and the sys crate's OUT_DIR. Removing the
+        # sys crate's build output forces its script to rerun, which restores
+        # those directories from its cache or re-downloads the runtime.
         run: |
-          cargo clean -p sherpa-rs-sys
+          rm -rf target/release/build/sherpa-rs-sys-*
           cargo build --release --locked
       - name: Locate shared inference runtime
         run: |
