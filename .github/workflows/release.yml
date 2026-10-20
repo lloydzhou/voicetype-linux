@@ -68,11 +68,18 @@ jobs:
           bash scripts/package-deb.sh "$version"
           cd dist
           sha256sum *.deb > SHA256SUMS
-      - name: Verify package installs and resolves libraries
+      - name: Verify clean distro installs without build cache
         run: |
-          sudo apt-get install -y ./dist/*.deb
-          ! ldd /usr/bin/voicetype | grep 'not found'
-          dpkg-query -W voicetype
+          for image in ubuntu:22.04 debian:bookworm; do
+            docker run --rm -v "$PWD/dist:/packages:ro" "$image" bash -ec '
+              apt-get update
+              apt-get install -y /packages/*.deb
+              output=$(ldd /usr/bin/voicetype)
+              printf "%s\n" "$output"
+              if printf "%s\n" "$output" | grep -q "not found"; then exit 1; fi
+              dpkg-query -W voicetype
+            '
+          done
       - uses: actions/upload-artifact@v4
         with:
           name: voicetype-debian-amd64

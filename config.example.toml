@@ -16,8 +16,7 @@ model_path = "/home/YOURUSER/.local/share/voicetype/models/ggml-base.bin"
 # 快捷键说明 (仅展示, 代码中固定为 RightCtrl+RightShift 按住说话)
 hotkey = "RightCtrl+RightShift (hold to talk)"
 
-# 粘贴前是否切换输入法到英文并在粘贴后还原 (fcitx5/ibus)。
-# 默认 false: 完全不动输入法。
+# 保留的兼容配置项；剪贴板注入不会切换输入法。
 ime_switch = false
 
 [llm]
