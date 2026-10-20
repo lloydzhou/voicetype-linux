@@ -46,7 +46,11 @@ install -m644 "$root"/packaging/licenses/* "$stage/usr/share/doc/voicetype/licen
 # Resolve distro-specific GTK/ALSA dependency names instead of hardcoding t64 names.
 mkdir -p "$stage/debian"
 printf 'Source: voicetype\nSection: utils\nPriority: optional\nMaintainer: lloydzhou <lloydzhou@users.noreply.github.com>\n\nPackage: voicetype\nArchitecture: amd64\nDescription: Local hold-to-talk dictation\n' > "$stage/debian/control"
-deps=$(cd "$stage" && dpkg-shlibdeps --ignore-missing-info -l"$stage/usr/lib/voicetype" -O -eusr/bin/voicetype | sed -n 's/^shlibs:Depends=//p')
+elf_args=(-eusr/bin/voicetype)
+for lib in "$stage"/usr/lib/voicetype/*.so*; do
+    elf_args+=("-e${lib#"$stage/"}")
+done
+deps=$(cd "$stage" && dpkg-shlibdeps --ignore-missing-info -l"$stage/usr/lib/voicetype" -O "${elf_args[@]}" | sed -n 's/^shlibs:Depends=//p')
 [[ -n "$deps" ]] || { echo 'Could not determine system library dependencies' >&2; exit 1; }
 cat > "$stage/DEBIAN/control" <<EOF
 Package: voicetype
