@@ -16,7 +16,15 @@ Linux 按住说话、松开上屏的语音输入工具。项目仓库：[lloydzh
 
 ### Debian / Ubuntu
 
-计划通过 GitHub Release 工作流提供 `.deb`，初期面向 **AMD64（x86_64）**。发布产物及共享 APT 仓库集成尚待验证，目前不提供未经验证的 APT 地址或一键安装命令。模型单独下载，不随源码或安装包捆绑。
+首个版本 [v0.1.0](https://github.com/lloydzhou/voicetype-linux/releases/tag/v0.1.0) 已发布，提供 **AMD64（x86_64）** `.deb`，在 Ubuntu 22.04、Ubuntu 24.04 和 Debian 12 的干净容器中完成安装验证。已接入共享 APT 源：
+
+```bash
+echo "deb [trusted=yes] https://lloydzhou.github.io/bash-agent/debian stable main" \
+    | sudo tee /etc/apt/sources.list.d/lloydzhou.list
+sudo apt update && sudo apt install voicetype
+```
+
+也可以从 [GitHub Release](https://github.com/lloydzhou/voicetype-linux/releases/latest) 下载 `voicetype_*_amd64.deb` 后 `sudo apt install ./voicetype_*_amd64.deb`。该源当前未签名（`trusted=yes`）。模型与输入权限仍需按下文单独配置。
 
 ### 从源码构建（Arch Linux）
 
@@ -32,13 +40,13 @@ cargo build --release
 
 ### Debian 发布流程
 
-[Debian release](https://github.com/lloydzhou/voicetype-linux/actions/workflows/release.yml) 在 main 推送时验证构建，也可手动运行。推送 `v0.1.0` 这样的版本标签会在验证成功后创建 GitHub Release，上传 AMD64 `.deb` 和 SHA256SUMS。打包验证已通过：构建、单元与真实粘贴测试、干净 Ubuntu 22.04 / Debian 12 容器安装检查；正式安装包在推送版本标签后发布。
+[Debian release](https://github.com/lloydzhou/voicetype-linux/actions/workflows/release.yml) 在 main 推送时验证构建，也可手动运行。推送 `v0.1.0` 这样的版本标签会在验证成功后创建 GitHub Release，上传 AMD64 `.deb` 和 SHA256SUMS；已接入的共享 APT 源需在 [bash-agent](https://github.com/lloydzhou/bash-agent) 侧手动运行一次 `apt-republish` 刷新，新版本不会自动出现。
 
 构建使用 Ubuntu 22.04；GTK、ALSA、X11 等由 APT 依赖安装，匹配构建版本的 sherpa-onnx / ONNX Runtime 放在包内 `/usr/lib/voicetype/`，不覆盖系统库。CI 在干净的 Ubuntu 22.04 和 Debian 12 容器中安装检查，不继承构建缓存或 `LD_LIBRARY_PATH`。容器检查不等于真实桌面的麦克风、热键和粘贴验证。Arch 请使用本机构建，不安装 Debian 包。
 
 发布后下载对应包并运行 `sudo apt install ./voicetype_*_amd64.deb`；模型及输入权限仍需按下文单独配置。共享 APT 源尚未接入。
 
-**不要只复制可执行文件就假定安装完成。** 当前 sherpa-onnx / ONNX Runtime 路径需要共享库，运行时必须能找到兼容的 `.so`。共享库安装与打包仍在完善；构建成功不等于目标机器可直接运行。请以验证后的发布说明为准，不建议通过以 root 身份运行来解决运行库或输入权限问题。
+**不要只复制可执行文件就假定安装完成。** 通过 `.deb` 安装会自动处理系统库与包内推理库；但源码构建（如 Arch）需要运行时能找到 sherpa-onnx / ONNX Runtime 的 `.so`，且模型、输入权限仍要单独配置。不建议通过以 root 身份运行来解决运行库或输入权限问题。
 
 ### 输入设备权限
 
