@@ -1,0 +1,54 @@
+[package]
+name = "voicetype"
+version = "0.1.0"
+edition = "2021"
+description = "Hold-to-talk voice input for Linux (X11/Wayland), ported from the macOS menu-bar voice-input app"
+license = "MIT"
+
+[[bin]]
+name = "voicetype"
+path = "src/main.rs"
+
+[dependencies]
+# --- UI ---
+gtk = { version = "0.18", features = ["v3_24"] }
+glib = "0.18"
+pango = "0.18"
+pangocairo = "0.18"
+
+# --- Tray ---
+tray-icon = "0.19"
+
+# --- Hotkey ---
+evdev = "0.12"
+
+# --- Audio / ASR ---
+cpal = "0.15"
+whisper-rs = "0.16"
+# SenseVoiceSmall (INT8) offline ASR via sherpa-rs (bundled sherpa-onnx C++,
+# prebuilt static onnxruntime). 0.6.x is the first line exposing the
+# `sense_voice` module; the old streaming zipformer `asr` module was removed
+# upstream in 0.6.0, so the sherpa streaming engine is gone.
+# Shared prebuilt libs (static variant has unresolved-symbol issues with
+# sherpa-onnx v1.12.9); the deploy step copies the .so next to the binary and
+# patches $ORIGIN rpath, see Makefile install.
+sherpa-rs = { version = "=0.6.8", default-features = false, features = ["download-binaries"] }
+# Keep sys exactly in lockstep with sherpa-rs 0.6.8: 0.6.7 code does not
+# compile against 0.6.8 bindings (missing canary/zipformer_ctc fields).
+sherpa-rs-sys = "=0.6.8"
+hound = "3"
+
+# --- LLM ---
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls", "json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+
+# --- misc ---
+log = "0.4"
+env_logger = "0.11"
+dirs = "5"
+
+[profile.release]
+lto = "thin"
+strip = true

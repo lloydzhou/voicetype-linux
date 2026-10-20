@@ -1,0 +1,84 @@
+name: Debian release
+on:
+  push:
+    tags: ['v[0-9]*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Package version for a test artifact (for example 0.1.0)'
+        required: true
+        default: '0.1.0'
+permissions:
+  contents: read
+concurrency:
+  group: deb-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  deb:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    env:
+      CARGO_TERM_COLOR: always
+      # Release binaries must run on baseline x86-64, not the runner's CPU only.
+      GGML_NATIVE: 'OFF'
+      GGML_AVX: 'OFF'
+      GGML_AVX2: 'OFF'
+      GGML_FMA: 'OFF'
+      GGML_F16C: 'OFF'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install build and test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake clang libclang-dev pkg-config libasound2-dev libgtk-3-dev libayatana-appindicator3-dev patchelf dpkg-dev xdotool xclip x11-utils xvfb xauth sakura python3
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Build
+        run: cargo build --release --locked
+      - name: Locate shared inference runtime
+        run: |
+          python3 - <<'PY'
+          import os, pathlib
+          roots = [pathlib.Path.home()/'.cache/sherpa-rs', pathlib.Path('target')]
+          paths = sorted({str(p.parent.resolve()) for root in roots if root.exists() for p in root.rglob('libsherpa-onnx-c-api.so')})
+          if len(paths) != 1:
+              raise SystemExit(f'Expected one shared runtime directory, found {paths}')
+          with open(os.environ['GITHUB_ENV'], 'a') as f:
+              f.write('LD_LIBRARY_PATH=' + paths[0] + '\n')
+          PY
+      - name: Regression and real clipboard tests
+        env:
+          GDK_BACKEND: x11
+          XDG_SESSION_TYPE: x11
+          VOICETYPE_INJECTION_PROBE: '1'
+        run: |
+          cargo test --locked --bin voicetype -- --test-threads=1
+          xvfb-run -a cargo test --locked --test injection_probe x11_entry_paste_readback -- --ignored --nocapture --test-threads=1
+          xvfb-run -a cargo test --locked --test sakura_probe real_sakura_readback -- --ignored --nocapture --test-threads=1
+      - name: Package
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          version="$INPUT_VERSION"
+          if [ "$EVENT_NAME" = push ]; then version="$RELEASE_TAG"; fi
+          bash scripts/package-deb.sh "$version"
+          cd dist
+          sha256sum *.deb > SHA256SUMS
+      - name: Verify package installs and resolves libraries
+        run: |
+          sudo apt-get install -y ./dist/*.deb
+          ! ldd /usr/bin/voicetype | grep 'not found'
+          dpkg-query -W voicetype
+      - uses: actions/upload-artifact@v4
+        with:
+          name: voicetype-debian-amd64
+          path: dist/*
+          if-no-files-found: error
+      - name: Publish tagged release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/*.deb dist/SHA256SUMS --verify-tag --generate-notes

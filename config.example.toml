@@ -1,0 +1,29 @@
+# voicetype 配置文件
+# 路径: ~/.config/voicetype/config.toml
+
+# 界面/识别语言: en | zh-Hans | zh-Hant | ja | ko
+language = "zh-Hans"
+
+# ASR 引擎: sensevoice（默认, SenseVoiceSmall INT8, 推荐）| whisper（旧路径）
+engine = "sensevoice"
+
+# SenseVoice 模型目录 (model.int8.onnx + tokens.txt)
+sensevoice_dir = "/home/YOURUSER/.local/share/voicetype/models/sensevoice/"
+
+# Whisper 模型路径 (ggml 格式, 建议 ggml-base.bin; engine = "whisper" 时使用)
+model_path = "/home/YOURUSER/.local/share/voicetype/models/ggml-base.bin"
+
+# 快捷键说明 (仅展示, 代码中固定为 RightCtrl+RightShift 按住说话)
+hotkey = "RightCtrl+RightShift (hold to talk)"
+
+# 粘贴前是否切换输入法到英文并在粘贴后还原 (fcitx5/ibus)。
+# 默认 false: 完全不动输入法。
+ime_switch = false
+
+[llm]
+# 是否启用 LLM 润色 (需要同时配置 api_key)
+enabled = false
+# OpenAI 兼容 API 地址, 末尾斜杠可有可无
+base_url = "https://api.openai.com/v1"
+api_key = ""
+model = "gpt-4o-mini"

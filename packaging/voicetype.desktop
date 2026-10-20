@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=VoiceType
+Comment=Local hold-to-talk voice input
+Exec=voicetype
+Icon=audio-input-microphone
+Terminal=false
+Categories=AudioVideo;Audio;Utility;
