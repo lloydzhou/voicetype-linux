@@ -1,6 +1,7 @@
 name: Debian release
 on:
   push:
+    branches: [main]
     tags: ['v[0-9]*']
   workflow_dispatch:
     inputs:
@@ -62,8 +63,8 @@ jobs:
           INPUT_VERSION: ${{ inputs.version }}
           EVENT_NAME: ${{ github.event_name }}
         run: |
-          version="$INPUT_VERSION"
-          if [ "$EVENT_NAME" = push ]; then version="$RELEASE_TAG"; fi
+          version="${INPUT_VERSION:-0.1.0}"
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then version="$RELEASE_TAG"; fi
           bash scripts/package-deb.sh "$version"
           cd dist
           sha256sum *.deb > SHA256SUMS
@@ -78,7 +79,7 @@ jobs:
           path: dist/*
           if-no-files-found: error
       - name: Publish tagged release
-        if: github.event_name == 'push'
+        if: startsWith(github.ref, 'refs/tags/')
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release create "$GITHUB_REF_NAME" dist/*.deb dist/SHA256SUMS --verify-tag --generate-notes
