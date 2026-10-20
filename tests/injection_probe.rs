@@ -87,7 +87,15 @@ fn run_case(class: &str, shift: bool, _tracked: bool) {
     assert_eq!(xdotool(&["getwindowpid", &xid]), pid);
     assert_eq!(xdotool(&["getwindowname", &xid]), title);
     xdotool(&["set_window", "--classname", class, "--class", class, &xid]);
-    assert_eq!(xdotool(&["getwindowclassname", &xid]), class);
+    // Read back through xprop, matching the production class resolver that
+    // avoids `xdotool getwindowclassname` (missing from older xdotool).
+    let wm_class = Command::new("xprop")
+        .args(["-id", &xid, "WM_CLASS"])
+        .output()
+        .expect("spawn xprop");
+    assert!(wm_class.status.success());
+    let wm_class = String::from_utf8(wm_class.stdout).expect("xprop UTF-8");
+    assert_eq!(wm_class.split('"').nth_back(1), Some(class), "WM_CLASS: {wm_class}");
     xdotool(&["windowfocus", "--sync", &xid]);
     pump_for(Duration::from_millis(100));
     assert_eq!(xdotool(&["getwindowfocus"]), xid, "focus moved before injection");

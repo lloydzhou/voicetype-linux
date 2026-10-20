@@ -67,6 +67,15 @@ fn parent_from_tree(tree: &str) -> Option<String> {
         .and_then(|rest| rest.split_whitespace().next()).map(str::to_owned))
 }
 
+/// Class from the last quoted WM_CLASS field, absent when the property is
+/// missing. xprop instead of `xdotool getwindowclassname`, which older
+/// releases (Ubuntu 22.04) do not provide.
+fn window_class(window: &str) -> Option<String> {
+    let out = run("xprop", &["-id", window, "WM_CLASS"], None, 300).ok()??;
+    let line = out.lines().find(|l| l.trim_start().starts_with("WM_CLASS"))?;
+    line.split('"').nth_back(1).filter(|c| !c.is_empty()).map(str::to_owned)
+}
+
 /// WM_CLASS can belong to an ancestor of the focused input child. Resolve
 /// that ancestor for shortcut selection, but preserve the actual input focus.
 fn current_focus() -> Result<Focus, String> {
@@ -74,9 +83,8 @@ fn current_focus() -> Result<Focus, String> {
         .ok_or("missing focus")?.trim().to_string();
     let mut client = leaf.clone();
     for _ in 0..32 {
-        if let Ok(Some(class)) = run("xdotool", &["getwindowclassname", &client], None, 300) {
-            let class = class.trim();
-            if !class.is_empty() && class != "(null)" {
+        if let Some(class) = window_class(&client) {
+            if class != "(null)" {
                 return Ok(Focus { leaf, client, class: class.to_lowercase() });
             }
         }
