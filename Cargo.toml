@@ -1,6 +1,6 @@
 [package]
 name = "voicetype"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "Hold-to-talk voice input for Linux (X11/Wayland), ported from the macOS menu-bar voice-input app"
 license = "MIT"
